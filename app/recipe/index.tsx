@@ -1,20 +1,23 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  TextInput,
-  Button,
-  StyleSheet,
   Alert,
+  Button,
   Image,
-  TouchableOpacity,
-  Text,
   ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
   useWindowDimensions,
+  View,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
+
+import { COLORS } from '../../constants/Colors';
+import { SPACING } from '../../constants/spacing';
 import { Recipe } from '../../src/types';
+import AppBar from '../components/AppBar';
 
 const CATEGORIES = ['Сніданки', 'Обіди', 'Вечері', 'Десерти'];
 
@@ -105,77 +108,83 @@ export default function RecipeEditorScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* 🔝 AppBar */}
-      <View style={styles.appBar}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.appBarTitle}>
-          {isEditing ? 'Редагувати рецепт' : 'Новий рецепт'}
-        </Text>
-      </View>
+      <AppBar title={isEditing ? 'Редагувати рецепт' : 'Новий рецепт'} showBackButton />
 
       <ScrollView
-        contentContainerStyle={[
-          styles.container,
-          { paddingHorizontal: width * 0.05 },
-        ]}
+        contentContainerStyle={{ padding: SPACING.large, paddingBottom: 100 }}
       >
         <TextInput
           placeholder="Назва рецепту"
           value={title}
           onChangeText={setTitle}
-          style={styles.input}
+          style={inputStyle}
         />
         <TextInput
           placeholder="Інгредієнти"
           value={ingredients}
           onChangeText={setIngredients}
           multiline
-          style={styles.input}
+          style={inputStyle}
         />
         <TextInput
           placeholder="Інструкція"
           value={description}
           onChangeText={setDescription}
           multiline
-          style={styles.input}
+          style={inputStyle}
         />
 
-        <View style={styles.categoryWrap}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: SPACING.medium }}>
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
               key={cat}
-              style={[
-                styles.categoryButton,
-                category === cat && styles.categorySelected,
-              ]}
+              style={{
+                backgroundColor: category === cat ? COLORS.primary : '#eee',
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                borderRadius: 20,
+                marginRight: 10,
+                marginBottom: 6,
+              }}
               onPress={() => setCategory(cat)}
             >
-              <Text
-                style={
-                  category === cat
-                    ? styles.categoryTextSelected
-                    : styles.categoryText
-                }
-              >
+              <Text style={{ color: category === cat ? COLORS.white : COLORS.text }}>
                 {cat}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <TouchableOpacity style={styles.mediaButton} onPress={pickMedia}>
-          <Text style={styles.mediaButtonText}>📷 Додати медіа</Text>
+        <TouchableOpacity
+          onPress={pickMedia}
+          style={{
+            backgroundColor: '#ccc',
+            padding: SPACING.medium,
+            borderRadius: 5,
+            alignItems: 'center',
+            marginBottom: SPACING.medium,
+          }}
+        >
+          <Text style={{ fontWeight: 'bold', color: COLORS.text }}>
+            📷 Додати медіа
+          </Text>
         </TouchableOpacity>
 
         {mediaUri ? (
           mediaUri.endsWith('.mp4') ? (
-            <Text style={{ marginTop: 10 }}>
+            <Text style={{ marginBottom: SPACING.medium }}>
               🎥 Відео: {mediaUri.split('/').pop()}
             </Text>
           ) : (
-            <Image source={{ uri: mediaUri }} style={styles.mediaPreview} />
+            <Image
+              source={{ uri: mediaUri }}
+              style={{
+                width: '100%',
+                height: 200,
+                borderRadius: 8,
+                marginBottom: SPACING.medium,
+              }}
+            />
           )
         ) : null}
 
@@ -185,8 +194,12 @@ export default function RecipeEditorScreen() {
         />
 
         {isEditing && (
-          <View style={{ marginTop: 20 }}>
-            <Button title="Видалити рецепт" color="red" onPress={deleteRecipe} />
+          <View style={{ marginTop: SPACING.large }}>
+            <Button
+              title="Видалити рецепт"
+              color={COLORS.danger}
+              onPress={deleteRecipe}
+            />
           </View>
         )}
       </ScrollView>
@@ -194,77 +207,11 @@ export default function RecipeEditorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  appBar: {
-    paddingTop: 50,
-    paddingBottom: 15,
-    paddingHorizontal: 20,
-    backgroundColor: '#ff7043',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  appBarTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  backButton: {
-    padding: 6,
-  },
-  backText: {
-    color: '#fff',
-    fontSize: 20,
-  },
-  container: {
-    paddingVertical: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 12,
-    marginBottom: 10,
-    borderRadius: 5,
-    textAlignVertical: 'top',
-  },
-  categoryWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 10,
-  },
-  categoryButton: {
-    backgroundColor: '#eee',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginRight: 10,
-    marginBottom: 6,
-  },
-  categorySelected: {
-    backgroundColor: '#ff7043',
-  },
-  categoryText: {
-    color: '#333',
-  },
-  categoryTextSelected: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  mediaButton: {
-    backgroundColor: '#ccc',
-    padding: 12,
-    borderRadius: 5,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  mediaButtonText: {
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  mediaPreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-});
+const inputStyle = {
+  borderWidth: 1,
+  borderColor: COLORS.inputBorder,
+  padding: SPACING.medium,
+  borderRadius: 5,
+  marginBottom: SPACING.medium,
+  textAlignVertical: 'top' as const,
+};
