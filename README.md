@@ -52,7 +52,7 @@ Join our community of developers creating universal apps.
 ## Screenshots
 
 ### Головний екран
-![Home Screen](./assets/images/home.png)
+![Home Screen](./assets/images/home.jpg)
 
 ### Новий рецепт
 ![New receipe](./assets/images/new_receipe.jpg)
