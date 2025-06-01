@@ -16,7 +16,13 @@ const AppBar: React.FC<AppBarProps> = ({ title, showBackButton = false, onBackPr
   return (
     <View style={styles.appBar}>
       {showBackButton && (
-        <TouchableOpacity onPress={onBackPress || router.back}>
+        <TouchableOpacity onPress={onBackPress || (() => {
+          if (router.canGoBack?.()) {
+            router.back();
+          } else {
+            router.replace('/tabs/home');
+          }
+        })}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
       )}
@@ -24,6 +30,8 @@ const AppBar: React.FC<AppBarProps> = ({ title, showBackButton = false, onBackPr
     </View>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   appBar: {

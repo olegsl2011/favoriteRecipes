@@ -2,9 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   FlatList,
   RefreshControl,
   View,
+  Text,
   useWindowDimensions,
 } from 'react-native';
 
@@ -33,12 +35,15 @@ export default function HomeScreen() {
 
   const loadRecipes = async () => {
     try {
+      setRefreshing(true);
       const stored = await AsyncStorage.getItem('recipes');
       const parsed: Recipe[] = stored ? JSON.parse(stored) : [];
       setRecipes(parsed);
-      filterRecipes(parsed, search, category);
     } catch (e) {
       console.error('Error loading recipes', e);
+      Alert.alert('Помилка', 'Не вдалося завантажити рецепти');
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -63,7 +68,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     filterRecipes(recipes, search, category);
-  }, [search, category]);
+  }, [search, category, recipes]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -82,6 +87,13 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={loadRecipes} />
         }
         numColumns={numColumns}
+        ListEmptyComponent={
+          <View style={{ alignItems: 'center', marginTop: 40 }}>
+            <Text style={{ fontSize: 16, color: 'gray' }}>
+              Немає рецептів за обраними фільтрами 😢
+            </Text>
+          </View>
+        }
         contentContainerStyle={{
           paddingBottom: 100,
           alignItems: numColumns === 1 ? 'center' : undefined,
