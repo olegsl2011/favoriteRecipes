@@ -15,14 +15,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../src/redux/store';
 import { setRecipes } from '../../src/redux/recipeSlice';
 import AppBar from '../components/AppBar';
+import CategorySelector from '../components/CategorySelector';
 import { COLORS } from '../../constants/Colors';
 import { SPACING } from '../../constants/spacing';
 import { Recipe } from '../../src/types';
 import { useTheme } from '../../src/context/ThemeContext';
 
+const CATEGORIES = ['Усі', 'Сніданки', 'Обіди', 'Вечері', 'Десерти'];
+
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('Усі');
   const dispatch = useDispatch();
   const router = useRouter();
   const { theme } = useTheme();
@@ -46,12 +50,14 @@ export default function HomeScreen() {
     }
   };
 
-  const filtered = recipes.filter((r) =>
-    r.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = recipes.filter((r) => {
+    const matchesSearch = r.title.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = category === 'Усі' || r.category === category;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: COLORS[theme].background }}>
       <AppBar title="🍽️ Мої рецепти" />
 
       <TextInput
@@ -70,6 +76,12 @@ export default function HomeScreen() {
         placeholderTextColor={COLORS[theme].textMuted}
       />
 
+      <CategorySelector
+        categories={CATEGORIES}
+        selected={category}
+        onSelect={setCategory}
+      />
+
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
@@ -77,7 +89,7 @@ export default function HomeScreen() {
         contentContainerStyle={{ padding: SPACING.medium }}
         ListEmptyComponent={() => (
           <Text style={{ textAlign: 'center', marginTop: 40, color: COLORS[theme].textMuted }}>
-            Рецепти не знайдено
+            Немає рецептів за обраними фільтрами 😢
           </Text>
         )}
         renderItem={({ item }) => (
