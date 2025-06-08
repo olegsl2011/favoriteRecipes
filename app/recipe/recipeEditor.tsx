@@ -15,6 +15,8 @@ import {
   View,
 } from 'react-native';
 
+
+import { useTheme } from '../../src/context/ThemeContext';
 import { COLORS } from '../../constants/Colors';
 import { SPACING } from '../../constants/spacing';
 import { Recipe } from '../../src/types';
@@ -34,6 +36,18 @@ export default function RecipeEditorScreen() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [isEditing, setIsEditing] = useState(false);
   const { width } = useWindowDimensions();
+    const { theme } = useTheme();
+
+
+const inputStyle = {
+    borderWidth: 1,
+    borderColor: COLORS[theme].inputBorder,
+    padding: SPACING.medium,
+    borderRadius: 5,
+    marginBottom: SPACING.medium,
+    textAlignVertical: 'top' as const,
+  };
+  
 
   useEffect(() => {
     const onBackPress = () => {
@@ -158,7 +172,7 @@ export default function RecipeEditorScreen() {
             <TouchableOpacity
               key={cat}
               style={{
-                backgroundColor: category === cat ? COLORS.primary : '#eee',
+                backgroundColor: category === cat ? COLORS[theme].primary : '#eee',
                 paddingVertical: 6,
                 paddingHorizontal: 12,
                 borderRadius: 20,
@@ -167,7 +181,7 @@ export default function RecipeEditorScreen() {
               }}
               onPress={() => setCategory(cat)}
             >
-              <Text style={{ color: category === cat ? COLORS.white : COLORS.text }}>
+              <Text style={{ color: category === cat ? COLORS[theme].white : COLORS[theme].text }}>
                 {cat}
               </Text>
             </TouchableOpacity>
@@ -184,7 +198,7 @@ export default function RecipeEditorScreen() {
             marginBottom: SPACING.medium,
           }}
         >
-          <Text style={{ fontWeight: 'bold', color: COLORS.text }}>
+          <Text style={{ fontWeight: 'bold', color: COLORS[theme].text }}>
             📷 Додати медіа
           </Text>
         </TouchableOpacity>
@@ -216,7 +230,7 @@ export default function RecipeEditorScreen() {
           <View style={{ marginTop: SPACING.large }}>
             <Button
               title="Видалити рецепт"
-              color={COLORS.danger}
+              color={COLORS[theme].danger}
               onPress={deleteRecipe}
             />
           </View>
@@ -224,13 +238,5 @@ export default function RecipeEditorScreen() {
       </ScrollView>
     </View>
   );
+  
 }
-
-const inputStyle = {
-  borderWidth: 1,
-  borderColor: COLORS.inputBorder,
-  padding: SPACING.medium,
-  borderRadius: 5,
-  marginBottom: SPACING.medium,
-  textAlignVertical: 'top' as const,
-};

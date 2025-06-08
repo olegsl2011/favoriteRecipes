@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '../../constants/Colors';
 import { SPACING } from '../../constants/spacing';
+import { useTheme } from '../../src/context/ThemeContext';
 
 type AppBarProps = {
   title: string;
@@ -12,9 +13,14 @@ type AppBarProps = {
 
 const AppBar: React.FC<AppBarProps> = ({ title, showBackButton = false, onBackPress }) => {
   const router = useRouter();
+  const { theme } = useTheme();
+  const currentColors = COLORS[theme];
+  const backgroundColor = currentColors.appBarBackground;
+  const textColor = currentColors.appBarText
+  const iconColor = currentColors.appBarIcon;
 
   return (
-    <View style={styles.appBar}>
+    <View style={[styles.appBar, { backgroundColor }]}>
       {showBackButton && (
         <TouchableOpacity onPress={onBackPress || (() => {
           if (router.canGoBack?.()) {
@@ -23,15 +29,13 @@ const AppBar: React.FC<AppBarProps> = ({ title, showBackButton = false, onBackPr
             router.replace('/tabs/home');
           }
         })}>
-          <Text style={styles.backText}>←</Text>
+          <Text style={[styles.backText, { color: iconColor }]}>←</Text>
         </TouchableOpacity>
       )}
-      <Text style={styles.appBarTitle}>{title}</Text>
+      <Text style={[styles.appBarTitle, { color: textColor }]}>{title}</Text>
     </View>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   appBar: {
@@ -40,17 +44,14 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xlarge,
     paddingBottom: SPACING.medium,
     paddingHorizontal: SPACING.large,
-    backgroundColor: COLORS.primary,
   },
   appBarTitle: {
-    color: COLORS.white,
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: SPACING.small,
   },
   backText: {
     fontSize: 20,
-    color: COLORS.white,
   },
 });
 

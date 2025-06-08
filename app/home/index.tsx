@@ -1,44 +1,43 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Image,
   RefreshControl,
-  View,
   Text,
-  useWindowDimensions,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-
-import { Recipe } from '../../src/types';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../src/redux/store';
+import { setRecipes } from '../../src/redux/recipeSlice';
 import AppBar from '../components/AppBar';
-import CategorySelector from '../components/CategorySelector';
-import FloatingButton from '../components/FloatingButton';
-import RecipeCard from '../components/RecipeCard';
-import SearchBar from '../components/SearchBar';
-
-const CATEGORIES = ['Усі', 'Сніданки', 'Обіди', 'Вечері', 'Десерти'];
+import { COLORS } from '../../constants/Colors';
+import { SPACING } from '../../constants/spacing';
+import { Recipe } from '../../src/types';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [filtered, setFiltered] = useState<Recipe[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('Усі');
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { theme } = useTheme();
+  const recipes = useSelector((state: RootState) => state.recipes.items);
 
-  const { width, height } = useWindowDimensions();
-  const isPortrait = height >= width;
-  const numColumns = isPortrait ? 1 : 2;
-  const cardMargin = 12;
-  const cardWidth = width / numColumns - cardMargin * 2;
+  useEffect(() => {
+    loadRecipes();
+  }, []);
 
   const loadRecipes = async () => {
     try {
       setRefreshing(true);
       const stored = await AsyncStorage.getItem('recipes');
       const parsed: Recipe[] = stored ? JSON.parse(stored) : [];
-      setRecipes(parsed);
+      dispatch(setRecipes(parsed));
     } catch (e) {
       console.error('Error loading recipes', e);
       Alert.alert('Помилка', 'Не вдалося завантажити рецепти');
@@ -47,72 +46,64 @@ export default function HomeScreen() {
     }
   };
 
-  const filterRecipes = (all: Recipe[], searchText: string, cat: string) => {
-    let result = all;
-    if (cat !== 'Усі') {
-      result = result.filter((r) => r.category === cat);
-    }
-    if (searchText) {
-      result = result.filter((r) =>
-        r.title.toLowerCase().includes(searchText.toLowerCase())
-      );
-    }
-    setFiltered(result);
-  };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      loadRecipes();
-    }, [])
+  const filtered = recipes.filter((r) =>
+    r.title.toLowerCase().includes(search.toLowerCase())
   );
-
-  useEffect(() => {
-    filterRecipes(recipes, search, category);
-  }, [search, category, recipes]);
 
   return (
     <View style={{ flex: 1 }}>
-      <AppBar title="🍳 Мої рецепти" />
-      <SearchBar value={search} onChange={setSearch} />
-      <CategorySelector
-        categories={CATEGORIES}
-        selected={category}
-        onSelect={setCategory}
+      <AppBar title="🍽️ Мої рецепти" />
+
+      <TextInput
+        placeholder="Пошук..."
+        value={search}
+        onChangeText={setSearch}
+        style={{
+          margin: SPACING.medium,
+          borderWidth: 1,
+          borderColor: COLORS[theme].inputBorder,
+          borderRadius: 8,
+          padding: SPACING.medium,
+          backgroundColor: COLORS[theme].cardBackground,
+          color: COLORS[theme].text,
+        }}
+        placeholderTextColor={COLORS[theme].textMuted}
       />
 
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={loadRecipes} />
-        }
-        numColumns={numColumns}
-        ListEmptyComponent={
-          <View style={{ alignItems: 'center', marginTop: 40 }}>
-            <Text style={{ fontSize: 16, color: 'gray' }}>
-              Немає рецептів за обраними фільтрами 😢
-            </Text>
-          </View>
-        }
-        contentContainerStyle={{
-          paddingBottom: 100,
-          alignItems: numColumns === 1 ? 'center' : undefined,
-        }}
-        columnWrapperStyle={
-          numColumns > 1 ? { justifyContent: 'space-between' } : undefined
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadRecipes} />}
+        contentContainerStyle={{ padding: SPACING.medium }}
+        ListEmptyComponent={() => (
+          <Text style={{ textAlign: 'center', marginTop: 40, color: COLORS[theme].textMuted }}>
+            Рецепти не знайдено
+          </Text>
+        )}
         renderItem={({ item }) => (
-          <RecipeCard
-            recipe={item}
-            width={cardWidth}
-            onPress={() =>
-              router.push({ pathname: '/recipe', params: { id: item.id } })
-            }
-          />
+          <TouchableOpacity
+            onPress={() => router.push(`/recipe/${item.id}`)}
+            style={{
+              backgroundColor: COLORS[theme].cardBackground,
+              marginBottom: SPACING.medium,
+              borderRadius: 8,
+              overflow: 'hidden',
+              elevation: 2,
+            }}
+          >
+            {item.media && (
+              <Image
+                source={{ uri: item.media }}
+                style={{ width: '100%', height: 180 }}
+                resizeMode="cover"
+              />
+            )}
+            <Text style={{ padding: SPACING.medium, fontWeight: 'bold', color: COLORS[theme].text }}>
+              {item.title}
+            </Text>
+          </TouchableOpacity>
         )}
       />
-
-      <FloatingButton onPress={() => router.push('/recipe')} />
     </View>
   );
 }

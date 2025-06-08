@@ -1,11 +1,12 @@
 import React from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { useTheme } from '../../src/context/ThemeContext';
 import { COLORS } from '../../constants/Colors';
 
 type Props = {
@@ -19,8 +20,10 @@ const CategorySelector: React.FC<Props> = ({
   selected,
   onSelect,
 }) => {
+  const { theme } = useTheme();
+
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper]}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -31,14 +34,23 @@ const CategorySelector: React.FC<Props> = ({
             key={cat}
             style={[
               styles.button,
-              selected === cat && styles.selectedButton,
+              {
+                backgroundColor:
+                  selected === cat
+                    ? COLORS[theme].primary
+                    : COLORS[theme].cardBackground,
+              },
             ]}
             onPress={() => onSelect(cat)}
           >
             <Text
-              style={
-                selected === cat ? styles.selectedText : styles.text
-              }
+              style={{
+                color:
+                  selected === cat
+                    ? COLORS[theme].white
+                    : COLORS[theme].text,
+                fontWeight: selected === cat ? 'bold' : 'normal',
+              }}
             >
               {cat}
             </Text>
@@ -62,21 +74,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#eee',
     marginRight: 10,
     alignItems: 'center',
     justifyContent: 'center',
     height: 36,
-  },
-  selectedButton: {
-    backgroundColor: COLORS.primary,
-  },
-  text: {
-    color: COLORS.text,
-  },
-  selectedText: {
-    color: COLORS.white,
-    fontWeight: 'bold',
   },
 });
 
