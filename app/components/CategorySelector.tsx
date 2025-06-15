@@ -1,9 +1,12 @@
 import React from 'react';
 import {
+  LayoutAnimation,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  UIManager,
   View,
 } from 'react-native';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -15,6 +18,10 @@ type Props = {
   onSelect: (category: string) => void;
 };
 
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 const CategorySelector: React.FC<Props> = ({
   categories,
   selected,
@@ -22,8 +29,13 @@ const CategorySelector: React.FC<Props> = ({
 }) => {
   const { theme } = useTheme();
 
+  const handleSelect = (cat: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    onSelect(cat);
+  };
+
   return (
-    <View style={[styles.wrapper]}>
+    <View style={styles.wrapper}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -41,7 +53,7 @@ const CategorySelector: React.FC<Props> = ({
                     : COLORS[theme].cardBackground,
               },
             ]}
-            onPress={() => onSelect(cat)}
+            onPress={() => handleSelect(cat)}
           >
             <Text
               style={{

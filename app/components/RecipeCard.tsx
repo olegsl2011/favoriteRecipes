@@ -16,6 +16,7 @@ const RecipeCard: React.FC<Props> = ({ recipe, onPress, width }) => {
       <Text style={styles.title}>{recipe.title}</Text>
       <Text style={styles.ingredients}>{recipe.ingredients}</Text>
       <Text style={styles.category}>📂 {recipe.category}</Text>
+
       {recipe.media?.endsWith('.mp4') ? (
         <Text>🎥 Відео: {recipe.media.split('/').pop()}</Text>
       ) : recipe.media ? (
@@ -54,4 +55,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RecipeCard;
+export default React.memo(RecipeCard);
